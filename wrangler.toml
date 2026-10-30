@@ -1,0 +1,6 @@
+name = "m3e-canvas"
+compatibility_date = "2026-10-30"
+
+# 纯静态站点：由 Workers Static Assets 直接托管 out/ 目录，
+# 无需编写任何 Worker 脚本。
+assets = { directory = "./out" }
