@@ -1,0 +1,48 @@
+name: Desktop Build (Windows)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install Tauri CLI
+        run: npm i -D @tauri-apps/cli@^2
+
+      - name: Generate Tauri icons from app icon
+        run: npx tauri icon public/icons/icon-512.png
+
+      - name: Build Tauri desktop app
+        run: npx tauri build
+
+      - name: Upload EXE installer to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.0
+          name: M3E Canvas Desktop v0.1.0
+          body: |
+            M3E Canvas 的 Windows 桌面版（Tauri 2 封装，上游：lnkiai/m3e-canvas，MIT 协议）。
+            未代码签名，首次运行 Windows SmartScreen 会提示，选择"仍要运行"即可。
+          files: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
